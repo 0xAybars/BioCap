@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BioProtocol Hat Lab</title>
+    <title>BioProtocol Cap Lab</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         /* 
-        BioProtocol Hat Overlay Application
-        A modern, minimal web app for adding scientist hats to photos
-        Features: drag-and-drop upload, interactive hat positioning, and download functionality
+        BioProtocol Cap Overlay Application
+        A modern, minimal web app for adding scientist caps to photos
+        Features: drag-and-drop upload, interactive cap positioning, and download functionality
         Theme: Clean laboratory aesthetic with molecular background
         */
         
@@ -377,7 +377,7 @@
                     <img id="logoImg" src="logo.png" alt="BioProtocol Logo" style="display: none;">
                     <span id="logoFallback">🧪</span>
                 </div>
-                BioProtocol Hat Lab
+                BioProtocol Cap Lab
             </h1>
             <p>Add scientific style to your photos with precision and accuracy</p>
         </header>
@@ -398,23 +398,23 @@
                 <div class="success-message" id="successMessage"></div>
 
                 <div class="controls" id="controls" style="display: none;">
-                    <h3 style="margin-bottom: 1rem; font-weight: 400; color: #0fb5b5;">🎛️ Hat Controls</h3>
+                    <h3 style="margin-bottom: 1rem; font-weight: 400; color: #0fb5b5;">🎛️ Cap Controls</h3>
                     
                     <div class="control-group">
                         <label for="opacitySlider">Opacity</label>
-                        <input type="range" id="opacitySlider" min="0" max="100" value="100" aria-label="Hat opacity">
+                        <input type="range" id="opacitySlider" min="0" max="100" value="100" aria-label="Cap opacity">
                         <div class="control-value" id="opacityValue">100%</div>
                     </div>
                     
                     <div class="control-group">
                         <label for="scaleSlider">Size</label>
-                        <input type="range" id="scaleSlider" min="10" max="200" value="50" aria-label="Hat size">
+                        <input type="range" id="scaleSlider" min="10" max="200" value="50" aria-label="Cap size">
                         <div class="control-value" id="scaleValue">50%</div>
                     </div>
                     
                     <div class="control-group">
                         <label for="rotationSlider">Rotation</label>
-                        <input type="range" id="rotationSlider" min="-180" max="180" value="0" aria-label="Hat rotation">
+                        <input type="range" id="rotationSlider" min="-180" max="180" value="0" aria-label="Cap rotation">
                         <div class="control-value" id="rotationValue">0°</div>
                     </div>
                     
@@ -437,13 +437,13 @@
                 <div class="canvas-container" id="canvasContainer">
                     <div class="canvas-placeholder" id="canvasPlaceholder">
                         <div class="icon">🔬</div>
-                        <p>Your photo with hat will appear here</p>
+                        <p>Your photo with cap will appear here</p>
                     </div>
-                    <canvas id="previewCanvas" style="display: none;" aria-label="Photo preview with hat overlay"></canvas>
+                    <canvas id="previewCanvas" style="display: none;" aria-label="Photo preview with cap overlay"></canvas>
                 </div>
                 
                 <p style="font-size: 0.9rem; opacity: 0.7; text-align: center;">
-                    💡 Drag the hat to move it, use mouse wheel to resize, or use the controls on the left
+                    💡 Drag the cap to move it, use mouse wheel to resize, or use the controls on the left
                 </p>
             </section>
         </main>
@@ -454,10 +454,10 @@
     </div>
 
     <script>
-        // BioProtocol Hat Overlay Application
-        // Interactive photo editing with hat overlay functionality
+        // BioProtocol Cap Overlay Application
+        // Interactive photo editing with cap overlay functionality
         
-        class HatOverlayApp {
+        class CapOverlayApp {
             constructor() {
                 this.canvas = document.getElementById('previewCanvas');
                 this.ctx = this.canvas.getContext('2d');
@@ -468,14 +468,14 @@
                 this.errorMessage = document.getElementById('errorMessage');
                 this.successMessage = document.getElementById('successMessage');
                 
-                // Hat properties
-                this.hatImage = null;
+                // Cap properties
+                this.capImage = null;
                 this.userImage = null;
-                this.hatPosition = { x: 0.5, y: 0.3 }; // Relative positions (0-1)
-                this.hatScale = 0.5;
-                this.hatRotation = 0;
-                this.hatOpacity = 1;
-                this.hatFlipped = false;
+                this.capPosition = { x: 0.5, y: 0.3 }; // Relative positions (0-1)
+                this.capScale = 0.5;
+                this.capRotation = 0;
+                this.capOpacity = 1;
+                this.capFlipped = false;
                 
                 // Mouse interaction
                 this.isDragging = false;
@@ -483,7 +483,7 @@
                 this.lastMousePos = { x: 0, y: 0 };
                 
                 this.initializeEventListeners();
-                this.loadHatImage();
+                this.loadCapImage();
                 this.loadLogo();
             }
             
@@ -530,30 +530,30 @@
                 
                 // Controls
                 document.getElementById('opacitySlider').addEventListener('input', (e) => {
-                    this.hatOpacity = e.target.value / 100;
+                    this.capOpacity = e.target.value / 100;
                     document.getElementById('opacityValue').textContent = e.target.value + '%';
                     this.redraw();
                 });
                 
                 document.getElementById('scaleSlider').addEventListener('input', (e) => {
-                    this.hatScale = e.target.value / 100;
+                    this.capScale = e.target.value / 100;
                     document.getElementById('scaleValue').textContent = e.target.value + '%';
                     this.redraw();
                 });
                 
                 document.getElementById('rotationSlider').addEventListener('input', (e) => {
-                    this.hatRotation = (e.target.value * Math.PI) / 180;
+                    this.capRotation = (e.target.value * Math.PI) / 180;
                     document.getElementById('rotationValue').textContent = e.target.value + '°';
                     this.redraw();
                 });
                 
                 document.getElementById('flipBtn').addEventListener('click', () => {
-                    this.hatFlipped = !this.hatFlipped;
+                    this.capFlipped = !this.capFlipped;
                     this.redraw();
                 });
                 
                 document.getElementById('resetBtn').addEventListener('click', () => {
-                    this.resetHatPosition();
+                    this.resetCapPosition();
                 });
                 
                 document.getElementById('downloadBtn').addEventListener('click', () => {
@@ -561,7 +561,7 @@
                 });
             }
             
-            async loadHatImage() {
+            async loadCapImage() {
                 try {
                     // First try to load as a regular image
                     const img = new Image();
@@ -572,11 +572,11 @@
                     });
                     
                     // Don't set crossOrigin for local files - this causes CORS issues
-                    img.src = 'hat.png';
+                    img.src = 'cap.png';
                     
-                    this.hatImage = await loadPromise;
-                    console.log('Hat PNG loaded successfully!');
-                    console.log('Hat dimensions:', this.hatImage.width, 'x', this.hatImage.height);
+                    this.capImage = await loadPromise;
+                    console.log('Cap PNG loaded successfully!');
+                    console.log('Cap dimensions:', this.capImage.width, 'x', this.capImage.height);
                     
                     if (this.userImage) {
                         this.redraw();
@@ -584,19 +584,19 @@
                     
                 } catch (error) {
                     // If direct loading fails, try to load via file input and convert to data URL
-                    console.log('Direct hat loading failed, trying alternative method...');
-                    this.createFallbackHat();
+                    console.log('Direct cap loading failed, trying alternative method...');
+                    this.createFallbackCap();
                 }
             }
             
-            createFallbackHat() {
-                // Create a fallback hat using canvas if hat.png is not available
+            createFallbackCap() {
+                // Create a fallback cap using canvas if cap.png is not available
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
                 canvas.width = 200;
                 canvas.height = 120;
                 
-                // Draw a simple scientist hat
+                // Draw a simple scientist cap
                 ctx.fillStyle = '#2a2a2a';
                 ctx.beginPath();
                 ctx.ellipse(100, 60, 60, 40, 0, 0, 2 * Math.PI);
@@ -616,18 +616,18 @@
                 // Convert canvas to image
                 canvas.toBlob((blob) => {
                     const url = URL.createObjectURL(blob);
-                    this.hatImage = new Image();
-                    this.hatImage.onload = () => {
-                        console.log('Fallback hat created');
+                    this.capImage = new Image();
+                    this.capImage.onload = () => {
+                        console.log('Fallback cap created');
                         if (this.userImage) {
                             this.redraw();
                         }
                         URL.revokeObjectURL(url);
                     };
-                    this.hatImage.src = url;
+                    this.capImage.src = url;
                 });
                 
-                this.showError('hat.png bulunamadı, varsayılan şapka kullanılıyor. hat.png dosyasını HTML ile aynı klasöre ekleyin.');
+                this.showError('cap.png bulunamadı, varsayılan şapka kullanılıyor. cap.png dosyasını HTML ile aynı klasöre ekleyin.');
             }
             
             handleFileSelect(e) {
@@ -716,35 +716,35 @@
             }
             
             redraw() {
-                if (!this.userImage || !this.hatImage) return;
+                if (!this.userImage || !this.capImage) return;
                 
                 this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
                 
                 // Draw user image
                 this.ctx.drawImage(this.userImage, 0, 0, this.canvas.width, this.canvas.height);
                 
-                // Draw hat with transformations
+                // Draw cap with transformations
                 this.ctx.save();
                 
-                const hatX = this.hatPosition.x * this.canvas.width;
-                const hatY = this.hatPosition.y * this.canvas.height;
-                const hatWidth = this.hatImage.width * this.hatScale;
-                const hatHeight = this.hatImage.height * this.hatScale;
+                const capX = this.capPosition.x * this.canvas.width;
+                const capY = this.capPosition.y * this.canvas.height;
+                const capWidth = this.capImage.width * this.capScale;
+                const capHeight = this.capImage.height * this.capScale;
                 
-                this.ctx.globalAlpha = this.hatOpacity;
-                this.ctx.translate(hatX, hatY);
-                this.ctx.rotate(this.hatRotation);
+                this.ctx.globalAlpha = this.capOpacity;
+                this.ctx.translate(capX, capY);
+                this.ctx.rotate(this.capRotation);
                 
-                if (this.hatFlipped) {
+                if (this.capFlipped) {
                     this.ctx.scale(-1, 1);
                 }
                 
                 this.ctx.drawImage(
-                    this.hatImage, 
-                    -hatWidth / 2, 
-                    -hatHeight / 2, 
-                    hatWidth, 
-                    hatHeight
+                    this.capImage, 
+                    -capWidth / 2, 
+                    -capHeight / 2, 
+                    capWidth, 
+                    capHeight
                 );
                 
                 this.ctx.restore();
@@ -755,14 +755,14 @@
                 const x = (e.clientX - rect.left) / rect.width;
                 const y = (e.clientY - rect.top) / rect.height;
                 
-                // Check if click is near hat
-                const hatX = this.hatPosition.x;
-                const hatY = this.hatPosition.y;
-                const distance = Math.sqrt((x - hatX) ** 2 + (y - hatY) ** 2);
+                // Check if click is near cap
+                const capX = this.capPosition.x;
+                const capY = this.capPosition.y;
+                const distance = Math.sqrt((x - capX) ** 2 + (y - capY) ** 2);
                 
-                if (distance < 0.15) { // Within hat area
+                if (distance < 0.15) { // Within cap area
                     this.isDragging = true;
-                    this.dragStart = { x: x - hatX, y: y - hatY };
+                    this.dragStart = { x: x - capX, y: y - capY };
                     this.canvas.style.cursor = 'grabbing';
                 }
             }
@@ -773,9 +773,9 @@
                     const x = (e.clientX - rect.left) / rect.width;
                     const y = (e.clientY - rect.top) / rect.height;
                     
-                    const hatX = this.hatPosition.x;
-                    const hatY = this.hatPosition.y;
-                    const distance = Math.sqrt((x - hatX) ** 2 + (y - hatY) ** 2);
+                    const capX = this.capPosition.x;
+                    const capY = this.capPosition.y;
+                    const distance = Math.sqrt((x - capX) ** 2 + (y - capY) ** 2);
                     
                     this.canvas.style.cursor = distance < 0.15 ? 'grab' : 'move';
                     return;
@@ -785,8 +785,8 @@
                 const x = (e.clientX - rect.left) / rect.width;
                 const y = (e.clientY - rect.top) / rect.height;
                 
-                this.hatPosition.x = Math.max(0, Math.min(1, x - this.dragStart.x));
-                this.hatPosition.y = Math.max(0, Math.min(1, y - this.dragStart.y));
+                this.capPosition.x = Math.max(0, Math.min(1, x - this.dragStart.x));
+                this.capPosition.y = Math.max(0, Math.min(1, y - this.dragStart.y));
                 
                 this.redraw();
             }
@@ -799,11 +799,11 @@
             handleWheel(e) {
                 e.preventDefault();
                 const delta = e.deltaY > 0 ? -0.05 : 0.05;
-                this.hatScale = Math.max(0.1, Math.min(2, this.hatScale + delta));
+                this.capScale = Math.max(0.1, Math.min(2, this.capScale + delta));
                 
                 // Update scale slider
-                document.getElementById('scaleSlider').value = this.hatScale * 100;
-                document.getElementById('scaleValue').textContent = Math.round(this.hatScale * 100) + '%';
+                document.getElementById('scaleSlider').value = this.capScale * 100;
+                document.getElementById('scaleValue').textContent = Math.round(this.capScale * 100) + '%';
                 
                 this.redraw();
             }
@@ -830,12 +830,12 @@
                 this.handleMouseUp();
             }
             
-            resetHatPosition() {
-                this.hatPosition = { x: 0.5, y: 0.3 };
-                this.hatScale = 0.5;
-                this.hatRotation = 0;
-                this.hatOpacity = 1;
-                this.hatFlipped = false;
+            resetCapPosition() {
+                this.capPosition = { x: 0.5, y: 0.3 };
+                this.capScale = 0.5;
+                this.capRotation = 0;
+                this.capOpacity = 1;
+                this.capFlipped = false;
                 
                 // Reset controls
                 document.getElementById('opacitySlider').value = 100;
@@ -849,7 +849,7 @@
             }
             
             async downloadImage() {
-                if (!this.userImage || !this.hatImage) {
+                if (!this.userImage || !this.capImage) {
                     this.showError('Please upload a photo first.');
                     return;
                 }
@@ -865,28 +865,28 @@
                     // Draw user image at full resolution
                     downloadCtx.drawImage(this.userImage, 0, 0);
                     
-                    // Draw hat at full resolution
+                    // Draw cap at full resolution
                     downloadCtx.save();
                     
-                    const hatX = this.hatPosition.x * downloadCanvas.width;
-                    const hatY = this.hatPosition.y * downloadCanvas.height;
-                    const hatWidth = this.hatImage.width * this.hatScale * (downloadCanvas.width / this.canvas.width);
-                    const hatHeight = this.hatImage.height * this.hatScale * (downloadCanvas.height / this.canvas.height);
+                    const capX = this.capPosition.x * downloadCanvas.width;
+                    const capY = this.capPosition.y * downloadCanvas.height;
+                    const capWidth = this.capImage.width * this.capScale * (downloadCanvas.width / this.canvas.width);
+                    const capHeight = this.capImage.height * this.capScale * (downloadCanvas.height / this.canvas.height);
                     
-                    downloadCtx.globalAlpha = this.hatOpacity;
-                    downloadCtx.translate(hatX, hatY);
-                    downloadCtx.rotate(this.hatRotation);
+                    downloadCtx.globalAlpha = this.capOpacity;
+                    downloadCtx.translate(capX, capY);
+                    downloadCtx.rotate(this.capRotation);
                     
-                    if (this.hatFlipped) {
+                    if (this.capFlipped) {
                         downloadCtx.scale(-1, 1);
                     }
                     
                     downloadCtx.drawImage(
-                        this.hatImage,
-                        -hatWidth / 2,
-                        -hatHeight / 2,
-                        hatWidth,
-                        hatHeight
+                        this.capImage,
+                        -capWidth / 2,
+                        -capHeight / 2,
+                        capWidth,
+                        capHeight
                     );
                     
                     downloadCtx.restore();
@@ -898,7 +898,7 @@
                                 const url = URL.createObjectURL(blob);
                                 const a = document.createElement('a');
                                 a.href = url;
-                                a.download = 'bioprotocol-hat-photo.png';
+                                a.download = 'bioprotocol-cap-photo.png';
                                 document.body.appendChild(a);
                                 a.click();
                                 document.body.removeChild(a);
@@ -916,7 +916,7 @@
                             const dataURL = downloadCanvas.toDataURL('image/png');
                             const a = document.createElement('a');
                             a.href = dataURL;
-                            a.download = 'bioprotocol-hat-photo.png';
+                            a.download = 'bioprotocol-cap-photo.png';
                             document.body.appendChild(a);
                             a.click();
                             document.body.removeChild(a);
@@ -961,7 +961,7 @@
         
         // Initialize the application when DOM is loaded
         document.addEventListener('DOMContentLoaded', () => {
-            new HatOverlayApp();
+            new CapOverlayApp();
         });
         
         // Keyboard accessibility
