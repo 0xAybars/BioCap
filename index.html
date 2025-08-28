@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BioProtocol Hat Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        /* 
+        BioProtocol Hat Overlay Application
+        A modern, minimal web app for adding scientist hats to photos
+        Features: drag-and-drop upload, interactive hat positioning, and download functionality
+        Theme: Clean laboratory aesthetic with molecular background
+        */
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0a0e1a;
+            color: #f8fafc;
+            min-height: 100vh;
+            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M 20 0 L 0 0 0 20" fill="none" stroke="%23ffffff" stroke-width="0.5" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            background-attachment: fixed;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 300;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #0fb5b5, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .logo-container {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(15, 181, 181, 0.1);
+            border-radius: 12px;
+            border: 1px solid rgba(15, 181, 181, 0.3);
+        }
+
+        .logo-container img {
+            max-width: 36px;
+            max-height: 36px;
+            object-fit: contain;
+        }
+
+        .header p {
+            opacity: 0.8;
+            font-size: 1.1rem;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        .upload-section, .canvas-section {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .upload-area {
+            border: 2px dashed rgba(15, 181, 181, 0.3);
+            border-radius: 12px;
+            padding: 3rem 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-bottom: 1.5rem;
+            background: rgba(15, 181, 181, 0.05);
+        }
+
+        .upload-area:hover,
+        .upload-area.dragover {
+            border-color: #0fb5b5;
+            background: rgba(15, 181, 181, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.7;
+        }
+
+        .upload-text {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+
+        .upload-subtext {
+            opacity: 0.6;
+            font-size: 0.9rem;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .controls {
+            display: grid;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .control-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .control-group label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            min-width: 80px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #0fb5b5, #06b6d4);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(15, 181, 181, 0.3);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: rgba(148, 163, 184, 0.2);
+            color: #f8fafc;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(148, 163, 184, 0.3);
+            box-shadow: 0 4px 12px rgba(148, 163, 184, 0.2);
+        }
+
+        input[type="range"] {
+            flex: 1;
+            min-width: 120px;
+            background: transparent;
+            -webkit-appearance: none;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(148, 163, 184, 0.3);
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #0fb5b5;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(15, 181, 181, 0.3);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #0fb5b5;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 6px rgba(15, 181, 181, 0.3);
+        }
+
+        .canvas-container {
+            position: relative;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #previewCanvas {
+            max-width: 100%;
+            max-height: 400px;
+            cursor: move;
+            border-radius: 8px;
+        }
+
+        .canvas-placeholder {
+            text-align: center;
+            opacity: 0.6;
+        }
+
+        .canvas-placeholder .icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding: 2rem;
+            font-size: 0.85rem;
+            opacity: 0.6;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(8px);
+            border-radius: 12px;
+            border: 1px solid rgba(148, 163, 184, 0.05);
+            transition: opacity 0.3s ease;
+        }
+
+        .footer:hover {
+            opacity: 0.8;
+        }
+
+        .footer a {
+            color: #0fb5b5;
+            text-decoration: none;
+            font-weight: 500;
+            position: relative;
+            transition: all 0.3s ease;
+            z-index: 10;
+            display: inline-block;
+            pointer-events: auto;
+        }
+
+        .footer a::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: linear-gradient(135deg, #0fb5b5, #06b6d4);
+            transition: width 0.3s ease;
+            pointer-events: none;
+        }
+
+        .footer a:hover {
+            color: #06b6d4;
+            transform: translateY(-1px);
+        }
+
+        .footer a:hover::after {
+            width: 100%;
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fecaca;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            display: none;
+        }
+
+        .success-message {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: #bbf7d0;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            display: none;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .control-group {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+                text-align: center;
+            }
+            
+            .control-group label {
+                font-size: 1rem;
+                margin-bottom: 0.5rem;
+            }
+            
+            .control-value {
+                justify-self: center;
+                margin-top: 0.5rem;
+            }
+        }
+
+        /* Loading animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(15, 181, 181, 0.3);
+            border-radius: 50%;
+            border-top-color: #0fb5b5;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>
+                <div class="logo-container">
+                    <img id="logoImg" src="logo.png" alt="BioProtocol Logo" style="display: none;">
+                    <span id="logoFallback">🧪</span>
+                </div>
+                BioProtocol Hat Lab
+            </h1>
+            <p>Add scientific style to your photos with precision and accuracy</p>
+        </header>
+
+        <main class="main-content">
+            <section class="upload-section">
+                <h2 style="margin-bottom: 1.5rem; font-weight: 400;">Upload Your Photo</h2>
+                
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📷</div>
+                    <div class="upload-text">Click to upload or drag and drop</div>
+                    <div class="upload-subtext">Supports JPEG, PNG up to 10MB</div>
+                </div>
+                
+                <input type="file" id="photoInput" class="file-input" accept="image/jpeg,image/png" aria-label="Upload photo">
+                
+                <div class="error-message" id="errorMessage"></div>
+                <div class="success-message" id="successMessage"></div>
+
+                <div class="controls" id="controls" style="display: none;">
+                    <h3 style="margin-bottom: 1rem; font-weight: 400; color: #0fb5b5;">🎛️ Hat Controls</h3>
+                    
+                    <div class="control-group">
+                        <label for="opacitySlider">Opacity</label>
+                        <input type="range" id="opacitySlider" min="0" max="100" value="100" aria-label="Hat opacity">
+                        <div class="control-value" id="opacityValue">100%</div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="scaleSlider">Size</label>
+                        <input type="range" id="scaleSlider" min="10" max="200" value="50" aria-label="Hat size">
+                        <div class="control-value" id="scaleValue">50%</div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="rotationSlider">Rotation</label>
+                        <input type="range" id="rotationSlider" min="-180" max="180" value="0" aria-label="Hat rotation">
+                        <div class="control-value" id="rotationValue">0°</div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.5rem;">
+                        <button id="flipBtn" class="btn-secondary">🔄 Flip</button>
+                        <button id="resetBtn" class="btn-secondary">↺ Reset</button>
+                    </div>
+                    
+                    <div style="margin-top: 1.5rem;">
+                        <button id="downloadBtn" style="width: 100%; padding: 1rem; font-size: 1rem;">
+                            💾 Download Image
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="canvas-section">
+                <h2 style="margin-bottom: 1.5rem; font-weight: 400;">Preview & Edit</h2>
+                
+                <div class="canvas-container" id="canvasContainer">
+                    <div class="canvas-placeholder" id="canvasPlaceholder">
+                        <div class="icon">🔬</div>
+                        <p>Your photo with hat will appear here</p>
+                    </div>
+                    <canvas id="previewCanvas" style="display: none;" aria-label="Photo preview with hat overlay"></canvas>
+                </div>
+                
+                <p style="font-size: 0.9rem; opacity: 0.7; text-align: center;">
+                    💡 Drag the hat to move it, use mouse wheel to resize, or use the controls on the left
+                </p>
+            </section>
+        </main>
+
+        <footer class="footer">
+            Created by <a href="https://x.com/0xAybars" target="_blank">@0xAybars</a> /EarlyX with ❤️ for the BioProtocol Community
+        </footer>
+    </div>
+
+    <script>
+        // BioProtocol Hat Overlay Application
+        // Interactive photo editing with hat overlay functionality
+        
+        class HatOverlayApp {
+            constructor() {
+                this.canvas = document.getElementById('previewCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.photoInput = document.getElementById('photoInput');
+                this.uploadArea = document.getElementById('uploadArea');
+                this.controls = document.getElementById('controls');
+                this.canvasPlaceholder = document.getElementById('canvasPlaceholder');
+                this.errorMessage = document.getElementById('errorMessage');
+                this.successMessage = document.getElementById('successMessage');
+                
+                // Hat properties
+                this.hatImage = null;
+                this.userImage = null;
+                this.hatPosition = { x: 0.5, y: 0.3 }; // Relative positions (0-1)
+                this.hatScale = 0.5;
+                this.hatRotation = 0;
+                this.hatOpacity = 1;
+                this.hatFlipped = false;
+                
+                // Mouse interaction
+                this.isDragging = false;
+                this.dragStart = { x: 0, y: 0 };
+                this.lastMousePos = { x: 0, y: 0 };
+                
+                this.initializeEventListeners();
+                this.loadHatImage();
+                this.loadLogo();
+            }
+            
+            loadLogo() {
+                const logoImg = document.getElementById('logoImg');
+                const logoFallback = document.getElementById('logoFallback');
+                
+                logoImg.onload = () => {
+                    logoImg.style.display = 'block';
+                    logoFallback.style.display = 'none';
+                    console.log('Logo loaded successfully!');
+                };
+                
+                logoImg.onerror = () => {
+                    console.log('Logo not found, using emoji fallback');
+                    logoImg.style.display = 'none';
+                    logoFallback.style.display = 'block';
+                };
+                
+                // Trigger loading - src is already set in HTML
+                logoImg.src = logoImg.src;
+            }
+            
+            initializeEventListeners() {
+                // File upload
+                this.photoInput.addEventListener('change', (e) => this.handleFileSelect(e));
+                this.uploadArea.addEventListener('click', () => this.photoInput.click());
+                
+                // Drag and drop
+                this.uploadArea.addEventListener('dragover', (e) => this.handleDragOver(e));
+                this.uploadArea.addEventListener('dragleave', (e) => this.handleDragLeave(e));
+                this.uploadArea.addEventListener('drop', (e) => this.handleDrop(e));
+                
+                // Canvas interactions
+                this.canvas.addEventListener('mousedown', (e) => this.handleMouseDown(e));
+                this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+                this.canvas.addEventListener('mouseup', (e) => this.handleMouseUp(e));
+                this.canvas.addEventListener('wheel', (e) => this.handleWheel(e));
+                
+                // Touch support
+                this.canvas.addEventListener('touchstart', (e) => this.handleTouchStart(e));
+                this.canvas.addEventListener('touchmove', (e) => this.handleTouchMove(e));
+                this.canvas.addEventListener('touchend', (e) => this.handleTouchEnd(e));
+                
+                // Controls
+                document.getElementById('opacitySlider').addEventListener('input', (e) => {
+                    this.hatOpacity = e.target.value / 100;
+                    document.getElementById('opacityValue').textContent = e.target.value + '%';
+                    this.redraw();
+                });
+                
+                document.getElementById('scaleSlider').addEventListener('input', (e) => {
+                    this.hatScale = e.target.value / 100;
+                    document.getElementById('scaleValue').textContent = e.target.value + '%';
+                    this.redraw();
+                });
+                
+                document.getElementById('rotationSlider').addEventListener('input', (e) => {
+                    this.hatRotation = (e.target.value * Math.PI) / 180;
+                    document.getElementById('rotationValue').textContent = e.target.value + '°';
+                    this.redraw();
+                });
+                
+                document.getElementById('flipBtn').addEventListener('click', () => {
+                    this.hatFlipped = !this.hatFlipped;
+                    this.redraw();
+                });
+                
+                document.getElementById('resetBtn').addEventListener('click', () => {
+                    this.resetHatPosition();
+                });
+                
+                document.getElementById('downloadBtn').addEventListener('click', () => {
+                    this.downloadImage();
+                });
+            }
+            
+            async loadHatImage() {
+                try {
+                    // First try to load as a regular image
+                    const img = new Image();
+                    
+                    const loadPromise = new Promise((resolve, reject) => {
+                        img.onload = () => resolve(img);
+                        img.onerror = () => reject(new Error('Image load failed'));
+                    });
+                    
+                    // Don't set crossOrigin for local files - this causes CORS issues
+                    img.src = 'hat.png';
+                    
+                    this.hatImage = await loadPromise;
+                    console.log('Hat PNG loaded successfully!');
+                    console.log('Hat dimensions:', this.hatImage.width, 'x', this.hatImage.height);
+                    
+                    if (this.userImage) {
+                        this.redraw();
+                    }
+                    
+                } catch (error) {
+                    // If direct loading fails, try to load via file input and convert to data URL
+                    console.log('Direct hat loading failed, trying alternative method...');
+                    this.createFallbackHat();
+                }
+            }
+            
+            createFallbackHat() {
+                // Create a fallback hat using canvas if hat.png is not available
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = 200;
+                canvas.height = 120;
+                
+                // Draw a simple scientist hat
+                ctx.fillStyle = '#2a2a2a';
+                ctx.beginPath();
+                ctx.ellipse(100, 60, 60, 40, 0, 0, 2 * Math.PI);
+                ctx.fill();
+                
+                ctx.fillStyle = '#1a1a1a';
+                ctx.beginPath();
+                ctx.ellipse(100, 100, 90, 15, 0, 0, 2 * Math.PI);
+                ctx.fill();
+                
+                // Add some scientific elements
+                ctx.fillStyle = '#0fb5b5';
+                ctx.font = '12px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText('E=mc²', 100, 70);
+                
+                // Convert canvas to image
+                canvas.toBlob((blob) => {
+                    const url = URL.createObjectURL(blob);
+                    this.hatImage = new Image();
+                    this.hatImage.onload = () => {
+                        console.log('Fallback hat created');
+                        if (this.userImage) {
+                            this.redraw();
+                        }
+                        URL.revokeObjectURL(url);
+                    };
+                    this.hatImage.src = url;
+                });
+                
+                this.showError('hat.png bulunamadı, varsayılan şapka kullanılıyor. hat.png dosyasını HTML ile aynı klasöre ekleyin.');
+            }
+            
+            handleFileSelect(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    this.processFile(file);
+                }
+            }
+            
+            handleDragOver(e) {
+                e.preventDefault();
+                this.uploadArea.classList.add('dragover');
+            }
+            
+            handleDragLeave(e) {
+                e.preventDefault();
+                this.uploadArea.classList.remove('dragover');
+            }
+            
+            handleDrop(e) {
+                e.preventDefault();
+                this.uploadArea.classList.remove('dragover');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    this.processFile(files[0]);
+                }
+            }
+            
+            processFile(file) {
+                this.hideMessages();
+                
+                // Validate file type
+                if (!file.type.match('image/(jpeg|png)')) {
+                    this.showError('Please select a JPEG or PNG image.');
+                    return;
+                }
+                
+                // Validate file size (10MB limit)
+                if (file.size > 10 * 1024 * 1024) {
+                    this.showError('File size must be less than 10MB.');
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    this.loadUserImage(e.target.result);
+                };
+                reader.readAsDataURL(file);
+            }
+            
+            loadUserImage(src) {
+                const img = new Image();
+                // Don't set crossOrigin for user uploaded files - causes CORS issues
+                img.onload = () => {
+                    this.userImage = img;
+                    this.setupCanvas();
+                    this.showSuccess('Photo loaded successfully!');
+                    this.controls.style.display = 'block';
+                };
+                img.onerror = () => {
+                    this.showError('Failed to load the image. Please try another file.');
+                };
+                img.src = src;
+            }
+            
+            setupCanvas() {
+                const maxWidth = 800;
+                const maxHeight = 600;
+                
+                let { width, height } = this.userImage;
+                
+                // Scale down if too large
+                if (width > maxWidth || height > maxHeight) {
+                    const ratio = Math.min(maxWidth / width, maxHeight / height);
+                    width *= ratio;
+                    height *= ratio;
+                }
+                
+                this.canvas.width = width;
+                this.canvas.height = height;
+                this.canvas.style.display = 'block';
+                this.canvasPlaceholder.style.display = 'none';
+                
+                this.redraw();
+            }
+            
+            redraw() {
+                if (!this.userImage || !this.hatImage) return;
+                
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Draw user image
+                this.ctx.drawImage(this.userImage, 0, 0, this.canvas.width, this.canvas.height);
+                
+                // Draw hat with transformations
+                this.ctx.save();
+                
+                const hatX = this.hatPosition.x * this.canvas.width;
+                const hatY = this.hatPosition.y * this.canvas.height;
+                const hatWidth = this.hatImage.width * this.hatScale;
+                const hatHeight = this.hatImage.height * this.hatScale;
+                
+                this.ctx.globalAlpha = this.hatOpacity;
+                this.ctx.translate(hatX, hatY);
+                this.ctx.rotate(this.hatRotation);
+                
+                if (this.hatFlipped) {
+                    this.ctx.scale(-1, 1);
+                }
+                
+                this.ctx.drawImage(
+                    this.hatImage, 
+                    -hatWidth / 2, 
+                    -hatHeight / 2, 
+                    hatWidth, 
+                    hatHeight
+                );
+                
+                this.ctx.restore();
+            }
+            
+            handleMouseDown(e) {
+                const rect = this.canvas.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / rect.width;
+                const y = (e.clientY - rect.top) / rect.height;
+                
+                // Check if click is near hat
+                const hatX = this.hatPosition.x;
+                const hatY = this.hatPosition.y;
+                const distance = Math.sqrt((x - hatX) ** 2 + (y - hatY) ** 2);
+                
+                if (distance < 0.15) { // Within hat area
+                    this.isDragging = true;
+                    this.dragStart = { x: x - hatX, y: y - hatY };
+                    this.canvas.style.cursor = 'grabbing';
+                }
+            }
+            
+            handleMouseMove(e) {
+                if (!this.isDragging) {
+                    const rect = this.canvas.getBoundingClientRect();
+                    const x = (e.clientX - rect.left) / rect.width;
+                    const y = (e.clientY - rect.top) / rect.height;
+                    
+                    const hatX = this.hatPosition.x;
+                    const hatY = this.hatPosition.y;
+                    const distance = Math.sqrt((x - hatX) ** 2 + (y - hatY) ** 2);
+                    
+                    this.canvas.style.cursor = distance < 0.15 ? 'grab' : 'move';
+                    return;
+                }
+                
+                const rect = this.canvas.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / rect.width;
+                const y = (e.clientY - rect.top) / rect.height;
+                
+                this.hatPosition.x = Math.max(0, Math.min(1, x - this.dragStart.x));
+                this.hatPosition.y = Math.max(0, Math.min(1, y - this.dragStart.y));
+                
+                this.redraw();
+            }
+            
+            handleMouseUp(e) {
+                this.isDragging = false;
+                this.canvas.style.cursor = 'move';
+            }
+            
+            handleWheel(e) {
+                e.preventDefault();
+                const delta = e.deltaY > 0 ? -0.05 : 0.05;
+                this.hatScale = Math.max(0.1, Math.min(2, this.hatScale + delta));
+                
+                // Update scale slider
+                document.getElementById('scaleSlider').value = this.hatScale * 100;
+                document.getElementById('scaleValue').textContent = Math.round(this.hatScale * 100) + '%';
+                
+                this.redraw();
+            }
+            
+            // Touch support methods
+            handleTouchStart(e) {
+                e.preventDefault();
+                if (e.touches.length === 1) {
+                    const touch = e.touches[0];
+                    this.handleMouseDown({ clientX: touch.clientX, clientY: touch.clientY });
+                }
+            }
+            
+            handleTouchMove(e) {
+                e.preventDefault();
+                if (e.touches.length === 1) {
+                    const touch = e.touches[0];
+                    this.handleMouseMove({ clientX: touch.clientX, clientY: touch.clientY });
+                }
+            }
+            
+            handleTouchEnd(e) {
+                e.preventDefault();
+                this.handleMouseUp();
+            }
+            
+            resetHatPosition() {
+                this.hatPosition = { x: 0.5, y: 0.3 };
+                this.hatScale = 0.5;
+                this.hatRotation = 0;
+                this.hatOpacity = 1;
+                this.hatFlipped = false;
+                
+                // Reset controls
+                document.getElementById('opacitySlider').value = 100;
+                document.getElementById('opacityValue').textContent = '100%';
+                document.getElementById('scaleSlider').value = 50;
+                document.getElementById('scaleValue').textContent = '50%';
+                document.getElementById('rotationSlider').value = 0;
+                document.getElementById('rotationValue').textContent = '0°';
+                
+                this.redraw();
+            }
+            
+            async downloadImage() {
+                if (!this.userImage || !this.hatImage) {
+                    this.showError('Please upload a photo first.');
+                    return;
+                }
+                
+                try {
+                    // Create high-resolution canvas for download
+                    const downloadCanvas = document.createElement('canvas');
+                    const downloadCtx = downloadCanvas.getContext('2d');
+                    
+                    downloadCanvas.width = this.userImage.width;
+                    downloadCanvas.height = this.userImage.height;
+                    
+                    // Draw user image at full resolution
+                    downloadCtx.drawImage(this.userImage, 0, 0);
+                    
+                    // Draw hat at full resolution
+                    downloadCtx.save();
+                    
+                    const hatX = this.hatPosition.x * downloadCanvas.width;
+                    const hatY = this.hatPosition.y * downloadCanvas.height;
+                    const hatWidth = this.hatImage.width * this.hatScale * (downloadCanvas.width / this.canvas.width);
+                    const hatHeight = this.hatImage.height * this.hatScale * (downloadCanvas.height / this.canvas.height);
+                    
+                    downloadCtx.globalAlpha = this.hatOpacity;
+                    downloadCtx.translate(hatX, hatY);
+                    downloadCtx.rotate(this.hatRotation);
+                    
+                    if (this.hatFlipped) {
+                        downloadCtx.scale(-1, 1);
+                    }
+                    
+                    downloadCtx.drawImage(
+                        this.hatImage,
+                        -hatWidth / 2,
+                        -hatHeight / 2,
+                        hatWidth,
+                        hatHeight
+                    );
+                    
+                    downloadCtx.restore();
+                    
+                    // Try to download using toBlob
+                    try {
+                        downloadCanvas.toBlob((blob) => {
+                            if (blob) {
+                                const url = URL.createObjectURL(blob);
+                                const a = document.createElement('a');
+                                a.href = url;
+                                a.download = 'bioprotocol-hat-photo.png';
+                                document.body.appendChild(a);
+                                a.click();
+                                document.body.removeChild(a);
+                                URL.revokeObjectURL(url);
+                                
+                                this.showSuccess('Image downloaded successfully!');
+                            } else {
+                                throw new Error('Failed to create blob');
+                            }
+                        }, 'image/png');
+                    } catch (blobError) {
+                        console.log('toBlob failed, trying alternative method:', blobError);
+                        // Alternative method using toDataURL
+                        try {
+                            const dataURL = downloadCanvas.toDataURL('image/png');
+                            const a = document.createElement('a');
+                            a.href = dataURL;
+                            a.download = 'bioprotocol-hat-photo.png';
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                            
+                            this.showSuccess('Image downloaded successfully!');
+                        } catch (dataURLError) {
+                            throw new Error('Both download methods failed');
+                        }
+                    }
+                    
+                } catch (error) {
+                    console.error('Download failed:', error);
+                    this.showError('📸 You can take a screenshot of the result instead! Or try: Download failed due to browser security restrictions. Try using a local server (python -m http.server) or a different browser.');
+                }
+            }
+            
+            showError(message) {
+                this.errorMessage.textContent = message;
+                this.errorMessage.style.display = 'block';
+                this.successMessage.style.display = 'none';
+                
+                setTimeout(() => {
+                    this.errorMessage.style.display = 'none';
+                }, 5000);
+            }
+            
+            showSuccess(message) {
+                this.successMessage.textContent = message;
+                this.successMessage.style.display = 'block';
+                this.errorMessage.style.display = 'none';
+                
+                setTimeout(() => {
+                    this.successMessage.style.display = 'none';
+                }, 3000);
+            }
+            
+            hideMessages() {
+                this.errorMessage.style.display = 'none';
+                this.successMessage.style.display = 'none';
+            }
+        }
+        
+        // Initialize the application when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new HatOverlayApp();
+        });
+        
+        // Keyboard accessibility
+        document.addEventListener('keydown', (e) => {
+            if (e.target.matches('input[type="range"]')) {
+                // Allow fine-tuning with arrow keys
+                e.target.dispatchEvent(new Event('input'));
+            }
+        });
+    </script>
+</body>
+</html>
